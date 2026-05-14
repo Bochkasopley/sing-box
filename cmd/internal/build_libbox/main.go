@@ -163,27 +163,17 @@ func buildAndroid() {
 
 	bindTarget := getAndroidBindTarget()
 
-	// Build main variant (SDK 23)
-	mainTags := append([]string{}, sharedTags...)
-	// mainTags = append(mainTags, memcTags...)
-	if debugEnabled {
-		mainTags = append(mainTags, debugTags...)
-	}
-	buildAndroidVariant(AndroidBuildConfig{
-		AndroidAPI: 23,
-		OutputName: "libbox.aar",
-		Tags:       mainTags,
-	}, bindTarget)
-
-	// Build legacy variant (SDK 21, no naive outbound)
+	// SmarTunel local build: skip the main variant — its `with_naive_outbound`
+	// pulls a prebuilt libcronet.a that uses R_AARCH64_AUTH_ABS64 (reloc 315),
+	// which our local NDK lld rejects. We don't need naive outbound, so build
+	// only the legacy variant and emit it as libbox.aar (consumed by app/libs/).
 	legacyTags := filterTags(sharedTags, "with_naive_outbound")
-	// legacyTags = append(legacyTags, memcTags...)
 	if debugEnabled {
 		legacyTags = append(legacyTags, debugTags...)
 	}
 	buildAndroidVariant(AndroidBuildConfig{
 		AndroidAPI: 21,
-		OutputName: "libbox-legacy.aar",
+		OutputName: "libbox.aar",
 		Tags:       legacyTags,
 	}, bindTarget)
 }
